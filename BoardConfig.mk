@@ -1,4 +1,5 @@
 # inherit from the proprietary version
+
 -include vendor/Huawei/Holly/BoardConfigVendor.mk
 
 LOCAL_PATH := device/Huawei/Holly
@@ -15,6 +16,8 @@ TARGET_NO_BOOTLOADER := true
 TARGET_ARCH_VARIANT := armv7-a-neon
 TARGET_ARCH_VARIANT_CPU := cortex-a7
 TARGET_CPU_VARIANT:= cortex-a7
+
+# Fix Audio Issues
 TARGET_CPU_MEMCPY_OPT_DISABLE := true
 
 BOARD_HAS_NO_SELECT_BUTTON := true
@@ -25,12 +28,8 @@ DONT_DEXPREOPT_PREBUILTS := true
 
 # Bootloader
 TARGET_BOOTLOADER_BOARD_NAME := mt6582
-
 TARGET_USERIMAGES_USE_EXT4:=true
 TARGET_USERIMAGES_SPARSE_EXT_DISABLED := false
-
-# Assert
-TARGET_OTA_ASSERT_DEVICE := Holly,wt93807
 
 # MTK HARDWARE
 BOARD_HAS_MTK_HARDWARE := true
@@ -42,7 +41,6 @@ BLOCK_BASED_OTA :=false
 
 # RIL
 BOARD_RIL_CLASS := ../../../device/Huawei/Holly/ril/
-
 BOARD_CONNECTIVITY_VENDOR := MediaTek
 BOARD_CONNECTIVITY_MODULE := conn_soc
 
@@ -58,9 +56,7 @@ BOARD_FLASH_BLOCK_SIZE := 131072
 # Flags
 TARGET_GLOBAL_CFLAGS   += -mfpu=neon -mfloat-abi=softfp
 TARGET_GLOBAL_CPPFLAGS += -mfpu=neon -mfloat-abi=softfp
-
 TARGET_KMODULES := true
-
 COMMON_GLOBAL_CFLAGS += -DDISABLE_HW_ID_MATCH_CHECK
 TARGET_RUNNING_WITHOUT_SYNC_FRAMEWORK := true
 
@@ -68,15 +64,14 @@ TARGET_RUNNING_WITHOUT_SYNC_FRAMEWORK := true
 BOARD_KERNEL_CMDLINE :=
 BOARD_KERNEL_BASE := 0x10000000
 BOARD_KERNEL_PAGESIZE := 2048
-#TARGET_KERNEL_CONFIG := 2014011_debug_defconfig
-#TARGET_KERNEL_SOURCE := kernel/Huawei/Holly
+#TARGET_KERNEL_CONFIG := Holly_debug_defconfig
+#TARGET_KERNEL_SOURCE := kernel/Huawei/Holly (ofcourse a Joke !!!)
 TARGET_PREBUILT_KERNEL := $(LOCAL_PATH)/kernel
 BOARD_CUSTOM_BOOTIMG_MK := $(LOCAL_PATH)/MTKbootimg.mk
 BOARD_CUSTOM_BOOTIMG := true
 
 # Recovery
 TARGET_RECOVERY_FSTAB := $(LOCAL_PATH)/rootdir/recovery.fstab
-
 TARGET_USE_CUSTOM_LUN_FILE_PATH := "/sys/devices/virtual/android_usb/android0/f_mass_storage/lun%d/file"
 
 # TWRP
@@ -101,7 +96,7 @@ TW_INCLUDE_FB2PNG := true
 TW_CUSTOM_CPU_TEMP_PATH := /sys/devices/virtual/thermal/thermal_zone1/temp
 TW_EXTRA_LANGUAGES := true
 TW_BUILD_ZH_CN_SUPPORT := true
-TW_DEFAULT_LANGUAGE := zh_CN
+TW_DEFAULT_LANGUAGE := en_US
 
 # Bluetooth
 BOARD_HAVE_BLUETOOTH := true
@@ -114,6 +109,7 @@ HEALTHD_ENABLE_TRICOLOR_LED := true
 RED_LED_PATH := /sys/class/leds/red/brightness
 GREEN_LED_PATH := /sys/class/leds/green/brightness
 BLUE_LED_PATH := /sys/class/leds/blue/brightness
+
 # Next line, fix charging-mod on power off. It needs to modify the init.cpp.
 BOARD_CHARGING_MODE_BOOTING_LPM := /sys/class/BOOT/BOOT/boot/boot_mode
 
@@ -152,6 +148,6 @@ USE_MINIKIN := true
 # Sepolicy hack for old kernel, our mt6582 & mt6592 version is 26.
 POLICYVERS := 26
 
-# Hack for build
+# No Need Of Headers 
 $(shell mkdir -p $(OUT)/obj/KERNEL_OBJ/usr)
 
