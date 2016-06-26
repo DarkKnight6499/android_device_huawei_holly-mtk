@@ -1,4 +1,17 @@
-Device Tree of Huawei Honor Holly(HOL-U19)
+#Device Tree for Huawei Honor Holly 
+#MT6582
+==============
 
-Credits :
-Ferhung for his base tree
+This branch is for building 6.0.x based ROMs.
+
+==============
+* Credits
+
+        # fire855
+        # ferhung-mtk
+        # hyperion70
+        # ariafan
+        # DerTeufel
+	# Rohan Taneja
+        # all those who initially brought up Android M to MTK
+

@@ -6,6 +6,15 @@ on early-init
     mount debugfs /sys/kernel/debug /sys/kernel/debug
     setprop ro.mtk.hardware mt6582
 
+on charger
+    mount ext4 /emmc@android /system ro wait
+    start drvbd
+    start ipod
+    start servicemanager
+
+    # disable USB
+    write /sys/devices/platform/mt_usb/cmode 0
+
 on init
     export LD_PRELOAD "/system/lib/libxlog.so /system/lib/libmt6582.so"
     
@@ -19,12 +28,53 @@ on init
     chown root system /proc/lk_env
     chmod 0660 /proc/lk_env
 
+    # GPS
+    chown gps gps /sys/class/gpsdrv/gps/pwrctl
+    chown gps gps /sys/class/gpsdrv/gps/suspend
+    chown gps gps /sys/class/gpsdrv/gps/state
+    chown gps gps /sys/class/gpsdrv/gps/pwrsave
+    chown gps gps /sys/class/gpsdrv/gps/status
+
 # mount different fs start
 
 on fs
     write /proc/bootprof "INIT:eMMC:Mount_All_START"
     mount_all /fstab.mt6582
     write /proc/bootprof "INIT:eMMC:Mount_All_END"
+
+service agpsd /system/bin/mtk_agpsd
+    class main
+    socket agpsd stream 660 gps system
+    socket agpsd2 stream 660 gps system
+    socket agpsd3 stream 660 gps system
+    user root
+    group gps ccci inet sdcard_r sdcard_rw misc
+    oneshot
+
+service mnld /system/xbin/mnld
+    class main
+    user root
+    group system gps inet misc sdcard_rw sdcard_r media_rw
+    socket mnld stream 660 gps system
+    oneshot
+
+service wifi2agps /system/bin/wifi2agps
+    class main
+    user root
+    group gps inet
+    oneshot
+
+service BGW /system/xbin/BGW
+    user root
+    group gps system radio
+    class main
+    oneshot
+
+# Offline charging
+service ipod /system/bin/ipod
+    user root
+    group root
+    class ipo
 
 # mount different fs end
 
@@ -39,8 +89,14 @@ on post-fs
 
     exec /system/bin/mknod /dev/stpwmt c 190 0
     exec /system/bin/mknod /dev/stpgps c 191 0
-    
     exec /system/bin/mknod /dev/stpbt  c 192 0
+
+    # GPS
+    chmod 0666 /dev/gps
+    chown system gps /dev/gps
+    chmod 0660 /dev/stpgps
+    chown gps gps /dev/stpgps
+
     chmod 0660 /dev/stpbt
     chown bluetooth radio /dev/stpbt
 
@@ -145,9 +201,11 @@ on post-fs-data
     mkdir /dev/radio 0770 radio radio
     start adbd
 
-# GPS
+    # GPS
+    mkdir /data/agps_supl 0771 gps system
     mkdir /data/gps_mnl 0771 gps system
-    mkdir /data/misc/gps 0770 gps system
+    mkdir /data/misc/gps 0770 gps gps
+
 # -----------------------
 # Add by MTK
 
@@ -416,14 +474,9 @@ on post-fs-data
     chmod 0660 /dev/kd_camera_hw
     chmod 0660 /dev/kd_camera_flashlight
     chmod 0660 /dev/kd_camera_hw_bus2
-    chmod 0660 /dev/FM50AF    
-    chmod 0660 /dev/DW9714AF
-    chmod 0660 /dev/DW9718AF    
-    chmod 0660 /dev/GAF001AF
-    chmod 0660 /dev/GAF002AF
-    chmod 0660 /dev/GAF008AF
+    chmod 0660 /dev/FM50AF
+    chmod 0660 /dev/OV8858AF    
     chmod 0660 /dev/CAM_CAL_DRV
-    chmod 0660 /dev/EEPROM_M24C08F
 
     chown system camera /dev/camera-sysram
     chown system camera /dev/camera-isp
@@ -431,14 +484,9 @@ on post-fs-data
     chown system camera /dev/kd_camera_hw
     chown system camera /dev/kd_camera_flashlight
     chown system camera /dev/kd_camera_hw_bus2
-    chown system camera /dev/FM50AF    
-    chown system camera /dev/DW9714AF
-    chown system camera /dev/DW9718AF    
-    chown system camera /dev/GAF001AF
-    chown system camera /dev/GAF002AF
-    chown system camera /dev/GAF008AF
+    chown system camera /dev/FM50AF
+    chown system camera /dev/OV8858AF
     chown system camera /dev/CAM_CAL_DRV
-    chown system camera /dev/EEPROM_M24C08F
 
     #MATV
     chmod 0660 /dev/MATV
@@ -487,23 +535,11 @@ on post-fs-data
     chmod 0660 /dev/ttyMT2
     chown system system /dev/ttyMT2
 
-# GPS
-    chown gps gps /sys/devices/virtual/gpsdrv/gps/pwrctl
-    chown gps gps /sys/devices/virtual/gpsdrv/gps/suspend
-    chown gps gps /sys/devices/virtual/gpsdrv/gps/state
-    chown gps gps /sys/devices/virtual/gpsdrv/gps/pwrsave
-    chown gps gps /sys/devices/virtual/gpsdrv/gps/status
-
 
 #
 # Connectivity related device nodes & configuration (end)
 #
 
-# AGPS
-    mkdir /data/agps_supl 0771 gps system
-
-# GPS
-    mkdir /data/gps_mnl 0771 gps system
 
 # Encrypt phone function
     setprop vold.post_fs_data_done 1
@@ -528,6 +564,7 @@ on boot
     write /proc/sys/vm/dirty_writeback_centisecs 300
 
     chmod 0660 /sys/power/autosleep
+
     chmod 0664 /sys/class/leds/lcd-backlight/brightness
 
     chown system system /sys/devices/system/cpu/cpufreq/hotplug/cpu_num_base
@@ -549,15 +586,22 @@ on boot
     chown system system /sys/class/leds/green/trigger
     chown system system /sys/class/leds/blue/trigger
 
+    chmod 0664 /sys/class/leds/greenled/brightness
+    chown system system /sys/class/leds/greenled/brightness
+    chmod 0664 /sys/class/leds/greenled/trigger
+    chown system system /sys/class/leds/greenled/trigger
+
     # Permission for hibernation
     chown radio system /sys/power/tuxonice
     chown radio system /sys/power/tuxonice/do_hibernate
     chmod 0770 /sys/power/tuxonice
-    chmod 0220 /sys/power/tuxonice/do_hibernate
-
-# AGPS
-    mkdir /data/agps_supl 0771 gps system
-
+    chmod 0220 /sys/power/tuxonice/do_hibernate	
+	
+    # FM Radio device node
+    exec /system/bin/mknod /dev/fm c 193 0
+    chmod 0777 /dev/fm
+    chown system media /dev/fm
+	
 ## Thermal
   #change permissions on thermal devices
   chown root system /proc/mtktscpu/mtktscpu
@@ -796,20 +840,6 @@ service bluetoothd /system/bin/bluetoothd -n
 #
 #  External Modme control related services
 #
-
-service agpsd /system/bin/mtk_agpsd
-    class main
-    socket agpsd stream 660 gps system
-    socket agpsd2 stream 660 gps inet
-    socket agpsd3 stream 660 gps inet
-    user gps
-    group gps inet sdcard_r sdcard_rw misc radio
-
-service mnld /system/xbin/mnld
-    class main
-    user gps
-    group system gps inet misc sdcard_rw sdcard_r media_rw
-    socket mnld stream 660 gps system
     
 service mdlogger /system/bin/mdlogger
     class main
@@ -922,7 +952,7 @@ service thermal_manager /system/bin/thermal_manager
 
 service battery_charger /charger
     class charger
-
+    critical
     seclabel u:r:healthd:s0
 #
 # Connectivity related services (Begin)
@@ -946,5 +976,3 @@ service conn_launcher /system/bin/logwrapper /system/bin/6620_launcher -p /syste
 service enableswap /system/bin/sh /enableswap.sh
     class core
     oneshot	
-
-
