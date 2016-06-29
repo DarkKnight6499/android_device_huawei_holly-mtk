@@ -12,6 +12,7 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
+ * Cr. Der-Taufel
  */
 
 #ifndef ANDROID_INCLUDE_HARDWARE_GPS_MTK_H

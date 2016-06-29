@@ -12,7 +12,7 @@ $(call inherit-product-if-exists, vendor/huawei/holly/holly-vendor.mk)
 
 ## Device identifier. This must come after all inclusions
 PRODUCT_DEVICE := holly
-PRODUCT_NAME := aosip_holly
+PRODUCT_NAME := cm_holly
 PRODUCT_BRAND := Huawei
 PRODUCT_MODEL := holly
 PRODUCT_MANUFACTURER := Huawei

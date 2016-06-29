@@ -1,10 +1,4 @@
-# Copyright (C) 2012 The Android Open Source Project
-#
-# IMPORTANT: Do not create world writable files or directories.
-# This is a common source of Android security bugs.
-#
-   
-on post-fs-data
+ on post-fs-data
 
     write /proc/bootprof "post-fs-data: on modem start"
 
@@ -75,16 +69,6 @@ service md_minilog_util /system/bin/md_minilog_util
     disabled
     oneshot
 
-#
-#  Modem related services (Begin)
-#
-
-#service permission_check /system/bin/permission_check
-#    class main
-#    user root
-#    group nvram
-#    oneshot
-
 service ccci_fsd /system/bin/ccci_fsd 0
     user root
     group  nvram ccci system
@@ -104,21 +88,12 @@ service pppd_gprs /system/bin/pppd_dt /dev/ttyACM0 debug noauth refuse-eap usepe
     disabled
     oneshot
 
-#Add by T.Zh for ppp daemon
 service pppd /system/bin/pppd file /data/misc/ppp/ppp_options
     user root
     disabled 
     oneshot
 
-#
-#
-#  Modem related services (End)
-#
 
-#Add by vend_hp.chen for 
-#
-#   Telephony Early Read service (added by vend_hp.chen)
-#
 service terservice /system/bin/terservice
     class core
     user radio
