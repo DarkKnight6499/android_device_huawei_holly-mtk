@@ -4,7 +4,7 @@
 PRODUCT_RELEASE_NAME := holly
 
 # Inherit some common CM stuff.
-$(call inherit-product, vendor/cm/products/common_full.mk)
+$(call inherit-product, vendor/cm/config/common_full.mk)
 
 # Inherit from hardware-specific part of the product configuration
 $(call inherit-product, device/huawei/holly/device.mk)
