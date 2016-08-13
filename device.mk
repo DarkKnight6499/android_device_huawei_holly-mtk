@@ -74,6 +74,9 @@ PRODUCT_PACKAGES += \
 #    gsm0710muxd
 PRODUCT_PACKAGES += libmt6582
 
+PRODUCT_COPY_FILES += \
+     $(LOCAL_PATH)/configs/spn-conf.xml:system/etc/spn-conf.xml
+
 # GPS
 PRODUCT_COPY_FILES += \
     $(LOCAL_PATH)/configs/agps_profiles_conf2.xml:system/etc/agps_profiles_conf2.xml
@@ -162,11 +165,7 @@ PRODUCT_PACKAGES += \
     FMRadio \
     libfmcust \
     libfmjni \
-    libfmmt6620 \
-    libfmmt6627 \
-    libfmmt6628 \
-    libfmmt6630 \
-    libmtkplayer
+     libmtkplayer
 
 PRODUCT_PACKAGES += \
     libgralloc_extra
