@@ -16,7 +16,6 @@
 
 # inherit from the proprietary version
 -include vendor/huawei/holly/BoardConfigVendor.mk
-
 LOCAL_PATH := device/huawei/holly
 
 # Board
@@ -42,7 +41,6 @@ TARGET_LDPRELOAD := libxlog.so
 
 # Bootloader
 TARGET_BOOTLOADER_BOARD_NAME := mt6582
-
 TARGET_USERIMAGES_USE_EXT4:=true
 TARGET_USERIMAGES_SPARSE_EXT_DISABLED := false
 
@@ -59,7 +57,6 @@ BLOCK_BASED_OTA := false
 
 # RIL
 BOARD_RIL_CLASS := ../../../device/huawei/holly/ril/
-
 BOARD_CONNECTIVITY_VENDOR := MediaTek
 BOARD_CONNECTIVITY_MODULE := conn_soc
 
@@ -75,9 +72,7 @@ BOARD_FLASH_BLOCK_SIZE := 131072
 # Flags
 TARGET_GLOBAL_CFLAGS   += -mfpu=neon -mfloat-abi=softfp
 TARGET_GLOBAL_CPPFLAGS += -mfpu=neon -mfloat-abi=softfp
-
 TARGET_KMODULES := true
-
 COMMON_GLOBAL_CFLAGS += -DDISABLE_HW_ID_MATCH_CHECK
 TARGET_RUNNING_WITHOUT_SYNC_FRAMEWORK := true
 
@@ -171,4 +166,3 @@ FM_LIB_BUILD_MT6630 := yes
 
 #Disable RAM Eater JACK
 ANDROID_COMPILE_WITH_JACK :=false
-
