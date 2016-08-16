@@ -28,9 +28,6 @@ cd ../..
 cd system/netd
 git apply -v ../../device/huawei/holly/patches/system_netd.patch
 cd ../..
-cd system/vold
-git apply -v ../../device/huawei/holly/patches/system_vold.patch
-cd ../..
 
 echo Patches Successful
 echo "#SPT "
