@@ -28,6 +28,9 @@ cd ../..
 cd system/netd
 git apply -v ../../device/huawei/holly/patches/system_netd.patch
 cd ../..
+cd external/wpa_supplicant_8
+git apply -v ../../device/huawei/holly/patches/nvram.patch
+cd ../..
 
 echo Patches Successful
 echo "#SPT "
