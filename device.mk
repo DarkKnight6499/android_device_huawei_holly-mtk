@@ -136,6 +136,7 @@ PRODUCT_COPY_FILES += \
 PRODUCT_PACKAGES += \
     libwpa_client \
     hostapd \
+dhcpcd.conf \
     wpa_supplicant \
     wpa_supplicant.conf
 
@@ -211,6 +212,10 @@ PRODUCT_DEVICE := holly
 # Boot animation
 TARGET_SCREEN_HEIGHT := 1280
 TARGET_SCREEN_WIDTH := 720
+
+# AAPT
+PRODUCT_AAPT_CONFIG := normal
+PRODUCT_AAPT_PREF_CONFIG := xhdpi
 
 PRODUCT_PACKAGES += \
     librs_jni \

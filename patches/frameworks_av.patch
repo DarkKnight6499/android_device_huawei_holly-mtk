@@ -254,6 +254,7 @@ index 0000000..84616f7
 +} // namespace
 +
 
+
 From a12a8b2a99dec8c8eb16dc0ee97cdbba21710675 Mon Sep 17 00:00:00 2001
 From: ferhung-mtk <ferhung27@gmail.com>
 Date: Sat, 9 Jul 2016 17:41:51 +0800
@@ -333,103 +334,6 @@ index 19dde83..61a4fdc 100644
              if (fakeStride) {
                  // MAJOR HACK that is not pretty, it's just to fool the renderer to read the correct
 
-
-
-From 9a8ad1f25ee64963c04cf2a31e27e6911fbf631e Mon Sep 17 00:00:00 2001
-From: ferhung-mtk <ferhung27@gmail.com>
-Date: Sat, 9 Jul 2016 17:43:53 +0800
-Subject: [PATCH] MediaTek: add USE_LEGACY_MTK_AV_BLOB.
-
----
- media/libstagefright/include/OMXNodeInstance.h |  3 +++
- media/libstagefright/omx/Android.mk            |  6 ++++++
- media/libstagefright/omx/OMXNodeInstance.cpp   | 23 +++++++++++++++++++++++
- 3 files changed, 32 insertions(+)
-
-diff --git a/media/libstagefright/include/OMXNodeInstance.h b/media/libstagefright/include/OMXNodeInstance.h
-index a19d2b3..6b120d9 100644
---- a/media/libstagefright/include/OMXNodeInstance.h
-+++ b/media/libstagefright/include/OMXNodeInstance.h
-@@ -161,10 +161,13 @@ struct OMXNodeInstance {
-     };
-     Vector<ActiveBuffer> mActiveBuffers;
-     // for buffer ptr to buffer id translation
-+    // but don't enable for use with MTK Lollipop- blob
-+#ifndef USE_LEGACY_MTK_AV_BLOB
-     Mutex mBufferIDLock;
-     uint32_t mBufferIDCount;
-     KeyedVector<OMX::buffer_id, OMX_BUFFERHEADERTYPE *> mBufferIDToBufferHeader;
-     KeyedVector<OMX_BUFFERHEADERTYPE *, OMX::buffer_id> mBufferHeaderToBufferID;
-+#endif
-     MetadataBufferType mMetadataType[2];
- 
-     // For debug support
-diff --git a/media/libstagefright/omx/Android.mk b/media/libstagefright/omx/Android.mk
-index d16d5df..31a0c4f 100644
---- a/media/libstagefright/omx/Android.mk
-+++ b/media/libstagefright/omx/Android.mk
-@@ -36,6 +36,12 @@ ifeq ($(strip $(AUDIO_FEATURE_ENABLED_EXTN_FLAC_DECODER)),true)
- endif
- endif
- 
-+ifeq ($(BOARD_HAS_MTK_HARDWARE),true)
-+ifeq ($(BOARD_USES_LEGACY_MTK_AV_BLOB),true)
-+LOCAL_CFLAGS += -DUSE_LEGACY_MTK_AV_BLOB
-+endif
-+endif
-+
- LOCAL_MODULE:= libstagefright_omx
- LOCAL_CFLAGS += -Werror -Wall
- LOCAL_CLANG := true
-diff --git a/media/libstagefright/omx/OMXNodeInstance.cpp b/media/libstagefright/omx/OMXNodeInstance.cpp
-index 2d5f09d..4d299fa 100644
---- a/media/libstagefright/omx/OMXNodeInstance.cpp
-+++ b/media/libstagefright/omx/OMXNodeInstance.cpp
-@@ -192,8 +192,12 @@ OMXNodeInstance::OMXNodeInstance(
-     : mOwner(owner),
-       mNodeID(0),
-       mHandle(NULL),
-+#ifndef USE_LEGACY_MTK_AV_BLOB
-       mObserver(observer),
-       mBufferIDCount(0)
-+#else
-+      mObserver(observer)
-+#endif
- {
-     mName = ADebug::GetDebugName(name);
-     DEBUG = ADebug::GetDebugLevelFromProperty(name, "debug.stagefright.omx-debug");
-@@ -1604,6 +1608,7 @@ void OMXNodeInstance::freeActiveBuffers() {
-     }
- }
- 
-+#ifndef USE_LEGACY_MTK_AV_BLOB
- OMX::buffer_id OMXNodeInstance::makeBufferID(OMX_BUFFERHEADERTYPE *bufferHeader) {
-     if (bufferHeader == NULL) {
-         return 0;
-@@ -1660,5 +1665,23 @@ void OMXNodeInstance::invalidateBufferID(OMX::buffer_id buffer) {
-     mBufferHeaderToBufferID.removeItem(mBufferIDToBufferHeader.valueAt(index));
-     mBufferIDToBufferHeader.removeItemsAt(index);
- }
-+#else
-+
-+OMX::buffer_id OMXNodeInstance::makeBufferID(OMX_BUFFERHEADERTYPE *bufferHeader) {
-+    return (OMX::buffer_id)bufferHeader;
-+}
-+
-+OMX_BUFFERHEADERTYPE *OMXNodeInstance::findBufferHeader(OMX::buffer_id buffer) {
-+    return (OMX_BUFFERHEADERTYPE *)buffer;
-+}
-+
-+OMX::buffer_id OMXNodeInstance::findBufferID(OMX_BUFFERHEADERTYPE *bufferHeader) {
-+    return (OMX::buffer_id)bufferHeader;
-+}
-+
-+void OMXNodeInstance::invalidateBufferID(OMX::buffer_id buffer __unused) {
-+}
-+
-+#endif
- 
- }  // namespace android
 
 
 From 190b35b4d03a49c71839efba189ed49b68fdc407 Mon Sep 17 00:00:00 2001
@@ -1262,279 +1166,41 @@ index af46d63..efed5a2 100644
              client->handlePreviewData(msgType, dataPtr, metadata);
 
 
-From 3ccd91179bff42f704658c5f99c219d5619a0b16 Mon Sep 17 00:00:00 2001
+
+From 3f07cb5a9551ea8993bfdd9cdba762b7fd29945d Mon Sep 17 00:00:00 2001
 From: fire855 <thefire855@gmail.com>
-Date: Sat, 30 Jul 2016 01:54:21 +0200
-Subject: [PATCH] Add mtk FMRadio support
+Date: Fri, 22 Apr 2016 22:52:01 +0200
+Subject: [PATCH] Fix FM volume control
 
-Change-Id: I2da5139d71f4afe5a4c3f0f9b43cb44d516fbd18
+Change-Id: Ie56820e540e738f0fcd14276dcda89f199166d65
 ---
- include/media/MediaPlayerInterface.h               |   3 +
- media/libmediaplayerservice/Android.mk             |   5 +
- media/libmediaplayerservice/FMAudioPlayer.h        | 144 +++++++++++++++++++++
- media/libmediaplayerservice/MediaPlayerFactory.cpp |  25 ++++
- 4 files changed, 177 insertions(+)
- create mode 100644 media/libmediaplayerservice/FMAudioPlayer.h
+ services/audioflinger/AudioFlinger.cpp | 12 ++++++++++++
+ 1 file changed, 12 insertions(+)
 
-diff --git a/include/media/MediaPlayerInterface.h b/include/media/MediaPlayerInterface.h
-index 4810b7e..e2fb54d 100644
---- a/include/media/MediaPlayerInterface.h
-+++ b/include/media/MediaPlayerInterface.h
-@@ -52,6 +52,9 @@ enum player_type {
-     // argument to the 'test:' url in the setDataSource call.
-     TEST_PLAYER = 5,
-     DASH_PLAYER = 6,
-+#ifdef MTK_HARDWARE
-+    FM_AUDIO_PLAYER = 7,
-+#endif
- };
- 
- 
-diff --git a/media/libmediaplayerservice/Android.mk b/media/libmediaplayerservice/Android.mk
-index 6575625..08d5326 100644
---- a/media/libmediaplayerservice/Android.mk
-+++ b/media/libmediaplayerservice/Android.mk
-@@ -58,6 +58,11 @@ LOCAL_C_INCLUDES :=                                                 \
-     $(TOP)/external/tremolo/Tremolo                                 \
-     $(TOP)/frameworks/av/media/libavextensions                      \
- 
-+# Mediatek
-+ifeq ($(strip $(BOARD_HAS_MTK_HARDWARE)),true)
-+LOCAL_SHARED_LIBRARIES += libmtkplayer
-+endif
-+
- LOCAL_CFLAGS += -Werror -Wno-error=deprecated-declarations -Wall #-DLOG_NDEBUG=0
- LOCAL_CLANG := true
- 
-diff --git a/media/libmediaplayerservice/FMAudioPlayer.h b/media/libmediaplayerservice/FMAudioPlayer.h
-new file mode 100644
-index 0000000..0f239d4
---- /dev/null
-+++ b/media/libmediaplayerservice/FMAudioPlayer.h
-@@ -0,0 +1,144 @@
-+/* Copyright Statement:
-+ *
-+ * This software/firmware and related documentation ("MediaTek Software") are
-+ * protected under relevant copyright laws. The information contained herein
-+ * is confidential and proprietary to MediaTek Inc. and/or its licensors.
-+ * Without the prior written permission of MediaTek inc. and/or its licensors,
-+ * any reproduction, modification, use or disclosure of MediaTek Software,
-+ * and information contained herein, in whole or in part, shall be strictly prohibited.
-+ */
-+/* MediaTek Inc. (C) 2010. All rights reserved.
-+ *
-+ * BY OPENING THIS FILE, RECEIVER HEREBY UNEQUIVOCALLY ACKNOWLEDGES AND AGREES
-+ * THAT THE SOFTWARE/FIRMWARE AND ITS DOCUMENTATIONS ("MEDIATEK SOFTWARE")
-+ * RECEIVED FROM MEDIATEK AND/OR ITS REPRESENTATIVES ARE PROVIDED TO RECEIVER ON
-+ * AN "AS-IS" BASIS ONLY. MEDIATEK EXPRESSLY DISCLAIMS ANY AND ALL WARRANTIES,
-+ * EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE IMPLIED WARRANTIES OF
-+ * MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE OR NONINFRINGEMENT.
-+ * NEITHER DOES MEDIATEK PROVIDE ANY WARRANTY WHATSOEVER WITH RESPECT TO THE
-+ * SOFTWARE OF ANY THIRD PARTY WHICH MAY BE USED BY, INCORPORATED IN, OR
-+ * SUPPLIED WITH THE MEDIATEK SOFTWARE, AND RECEIVER AGREES TO LOOK ONLY TO SUCH
-+ * THIRD PARTY FOR ANY WARRANTY CLAIM RELATING THERETO. RECEIVER EXPRESSLY ACKNOWLEDGES
-+ * THAT IT IS RECEIVER'S SOLE RESPONSIBILITY TO OBTAIN FROM ANY THIRD PARTY ALL PROPER LICENSES
-+ * CONTAINED IN MEDIATEK SOFTWARE. MEDIATEK SHALL ALSO NOT BE RESPONSIBLE FOR ANY MEDIATEK
-+ * SOFTWARE RELEASES MADE TO RECEIVER'S SPECIFICATION OR TO CONFORM TO A PARTICULAR
-+ * STANDARD OR OPEN FORUM. RECEIVER'S SOLE AND EXCLUSIVE REMEDY AND MEDIATEK'S ENTIRE AND
-+ * CUMULATIVE LIABILITY WITH RESPECT TO THE MEDIATEK SOFTWARE RELEASED HEREUNDER WILL BE,
-+ * AT MEDIATEK'S OPTION, TO REVISE OR REPLACE THE MEDIATEK SOFTWARE AT ISSUE,
-+ * OR REFUND ANY SOFTWARE LICENSE FEES OR SERVICE CHARGE PAID BY RECEIVER TO
-+ * MEDIATEK FOR SUCH MEDIATEK SOFTWARE AT ISSUE.
-+ *
-+ * The following software/firmware and/or related documentation ("MediaTek Software")
-+ * have been modified by MediaTek Inc. All revisions are subject to any receiver's
-+ * applicable license agreements with MediaTek Inc.
-+ */
-+
-+#ifndef ANDROID_FM_AUDIOPLAYER_H
-+#define ANDROID_FM_AUDIOPLAYER_H
-+
-+
-+#include <utils/threads.h>
-+
-+#include <media/MediaPlayerInterface.h>
-+#include <media/AudioTrack.h>
-+#include <media/AudioRecord.h>
-+
-+namespace android
-+{
-+
-+class FMAudioPlayer : public MediaPlayerInterface
-+{
-+public:
-+    FMAudioPlayer();
-+    ~FMAudioPlayer();
-+
-+    virtual void        onFirstRef();
-+    virtual status_t    initCheck();
-+    //virtual status_t    setDataSource(const char *path, const KeyedVector<String8, String8> *headers);
-+    virtual status_t    setDataSource(const sp<IMediaHTTPService> &httpService, const char *url, const KeyedVector<String8, String8> *headers);
-+    virtual status_t    setDataSource(int fd, int64_t offset, int64_t length);
-+    virtual status_t    setVideoSurface(const sp<Surface>& /*surface*/)
-+    {
-+        return UNKNOWN_ERROR;
-+    }
-+    virtual status_t    setVideoSurfaceTexture(
-+        const sp<IGraphicBufferProducer>& /*bufferProducer*/)
-+    {
-+        return UNKNOWN_ERROR;
-+    }
-+    virtual status_t    prepare();
-+    virtual status_t    prepareAsync();
-+    virtual status_t    start();
-+    virtual status_t    stop();
-+    virtual status_t    seekTo(int msec);
-+    virtual status_t    pause();
-+    virtual bool        isPlaying();
-+    virtual status_t    getCurrentPosition(int *msec);
-+    virtual status_t    getDuration(int *msec);
-+    virtual status_t    release();
-+    virtual status_t    reset();
-+    virtual status_t    setLooping(int loop);
-+#ifndef FAKE_FM
-+    virtual status_t    setRender(bool enable);
-+#endif
-+    virtual player_type playerType()
-+    {
-+        return FM_AUDIO_PLAYER;
-+    }
-+    virtual status_t    invoke(const Parcel &/*request*/, Parcel */*reply*/)
-+    {
-+        return INVALID_OPERATION;
-+    }
-+    virtual status_t    setParameter(int /*key*/, const Parcel &/*request*/)
-+    {
-+        return INVALID_OPERATION;
-+    }
-+    virtual status_t    getParameter(int /*key*/, Parcel */*reply*/)
-+    {
-+        return INVALID_OPERATION;
-+    }
-+
-+private:
-+    status_t    setdatasource(const char *path, int fd, int64_t offset, int64_t length);
-+    status_t    reset_nosync();
-+    status_t    createOutputTrack();
-+    static int  renderThread(void *);
-+    int         render();
-+    bool        createAudioRecord();
-+    bool        deleteAudioRecord();
-+
-+#ifndef FAKE_FM
-+    void        setHwCallback(bool enable);
-+#endif
-+
-+    sp<AudioRecord>      mAudioRecord;
-+    Mutex               mMutex;
-+    Condition           mCondition;
-+    FILE               *mFile;
-+    int64_t             mOffset;
-+    int64_t             mLength;
-+    char               *mAudioBuffer;
-+    char               *mDummyBuffer;
-+    int                 mPlayTime;
-+    int                 mDuration;
-+    uint32_t            mFmAudioSamplingRate;
-+
-+    status_t            mState;
-+    int                 mStreamType;
-+    bool                mAndroidLoop;
-+    volatile bool       mExit;
-+    bool                mPaused;
-+		
-+    bool		mSetRender;
-+    volatile bool       mRender;
-+    pid_t               mRenderTid;
-+    bool 		flagRecordError;
-+
-+    int mMutePause;
-+};
-+
-+}; // namespace android
-+
-+#endif
-+
-+
-diff --git a/media/libmediaplayerservice/MediaPlayerFactory.cpp b/media/libmediaplayerservice/MediaPlayerFactory.cpp
-index f0afc5a..e378f3c 100644
---- a/media/libmediaplayerservice/MediaPlayerFactory.cpp
-+++ b/media/libmediaplayerservice/MediaPlayerFactory.cpp
-@@ -34,6 +34,10 @@
- #include "nuplayer/NuPlayerDriver.h"
- #include <mediaplayerservice/AVMediaServiceExtensions.h>
- 
-+#ifdef MTK_HARDWARE
-+#include "FMAudioPlayer.h"
-+#endif
-+
- namespace android {
- 
- Mutex MediaPlayerFactory::sLock;
-@@ -241,6 +245,24 @@ class TestPlayerFactory : public MediaPlayerFactory::IFactory {
+diff --git a/services/audioflinger/AudioFlinger.cpp b/services/audioflinger/AudioFlinger.cpp
+index 23215dd..2e1b6bb 100644
+--- a/services/audioflinger/AudioFlinger.cpp
++++ b/services/audioflinger/AudioFlinger.cpp
+@@ -989,6 +989,18 @@ status_t AudioFlinger::setStreamVolume(audio_stream_type_t stream, float value,
+         thread->setStreamVolume(stream, value);
      }
- };
  
 +#ifdef MTK_HARDWARE
-+class FMPlayerFactory : public MediaPlayerFactory::IFactory {
-+  public:
-+    virtual float scoreFactory(const sp<IMediaPlayer>& /*client*/,
-+                               const char* url,
-+                               float /*curScore*/) {
-+        if(strncmp(url, "MEDIATEK://MEDIAPLAYER_PLAYERTYPE_FM", 36) == 0)
-+           return 1.0;
-+        return 0.0;
++    // MTK FM Volume
++    if(stream == AUDIO_STREAM_MUSIC) {
++        sp<ThreadBase> thread;
++        thread = checkPlaybackThread_l(output);
++        if (thread == primaryPlaybackThread_l()) {
++            audio_hw_device_t *dev = mPrimaryHardwareDev->hwDevice();
++            dev->set_parameters (dev, String8::format("SetFmVolume=%f", value));
++        }
 +    }
-+
-+    virtual sp<MediaPlayerBase> createPlayer(pid_t /* pid */) {
-+        ALOGV("Create FM Player");
-+        return new FMAudioPlayer();
-+    }
-+};
 +#endif
 +
- void MediaPlayerFactory::registerBuiltinFactories() {
- 
-     MediaPlayerFactory::IFactory* pCustomFactory = NULL;
-@@ -256,6 +278,9 @@ void MediaPlayerFactory::registerBuiltinFactories() {
-         ALOGV("Registering DASH_PLAYER");
-         registerFactory_l(pCustomFactory, DASH_PLAYER);
-     }
-+#ifdef MTK_HARDWARE
-+    registerFactory_l(new FMPlayerFactory(), FM_AUDIO_PLAYER);
-+#endif
- 
-     sInitComplete = true;
- }
-
-
-<<<<<<< HEAD
-From 854f9b31faea245e1e2556fe9cc5ea0923525384 Mon Sep 17 00:00:00 2001
-From: tandob-device <kalpanasahaaa@gmail.com>
-Date: Sat, 13 Aug 2016 09:36:00 +0530
-Subject: [PATCH] fix for build
-
----
- media/libstagefright/omx/OMXNodeInstance.cpp | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
-
-diff --git a/media/libstagefright/omx/OMXNodeInstance.cpp b/media/libstagefright/omx/OMXNodeInstance.cpp
-index 9975e3b..fb17ad4 100644
---- a/media/libstagefright/omx/OMXNodeInstance.cpp
-+++ b/media/libstagefright/omx/OMXNodeInstance.cpp
-@@ -1706,7 +1706,7 @@ OMX::buffer_id OMXNodeInstance::makeBufferID(OMX_BUFFERHEADERTYPE *bufferHeader)
-     return (OMX::buffer_id)(size_t)bufferHeader;
- }
- 
--OMX_BUFFERHEADERTYPE *OMXNodeInstance::findBufferHeader(OMX::buffer_id buffer) {
-+OMX_BUFFERHEADERTYPE *OMXNodeInstance::findBufferHeader(OMX::buffer_id buffer, OMX_U32 portIndex __unused) {
-     return (OMX_BUFFERHEADERTYPE *)(size_t)buffer;
+     return NO_ERROR;
  }
  
 
 
 
 
-
-=======
->>>>>>> 1a38f7179312756366fc3933a400b286ac1a1a71
