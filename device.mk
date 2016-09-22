@@ -69,11 +69,6 @@ PRODUCT_COPY_FILES += \
 PRODUCT_PACKAGES += \
     libbt-vendor
 
-# GSM
-#PRODUCT_PACKAGES += \
-#    gsm0710muxd
-PRODUCT_PACKAGES += libmt6582
-
 PRODUCT_COPY_FILES += \
      $(LOCAL_PATH)/configs/spn-conf.xml:system/etc/spn-conf.xml
 
@@ -136,7 +131,6 @@ PRODUCT_COPY_FILES += \
 PRODUCT_PACKAGES += \
     libwpa_client \
     hostapd \
-dhcpcd.conf \
     wpa_supplicant \
     wpa_supplicant.conf
 
@@ -155,10 +149,6 @@ PRODUCT_PACKAGES += \
 # Camera
 PRODUCT_PACKAGES += \
     Snap
-
-# Gello
-PRODUCT_PACKAGES += \
-    Gello
 
 # FMRadio
 PRODUCT_PACKAGES += \
