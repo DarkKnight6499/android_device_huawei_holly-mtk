@@ -86,7 +86,6 @@ PRODUCT_COPY_FILES += \
     $(LOCAL_PATH)/rootdir/fstab.mt6582:root/fstab.mt6582 \
     $(LOCAL_PATH)/rootdir/init.modem.rc:root/init.modem.rc \
     $(LOCAL_PATH)/rootdir/init.mt6582.rc:root/init.mt6582.rc \
-    $(LOCAL_PATH)/rootdir/init.storage.rc:root/init.storage.rc \
     $(LOCAL_PATH)/rootdir/init.mt6582.usb.rc:root/init.mt6582.usb.rc \
     $(LOCAL_PATH)/rootdir/ueventd.mt6582.rc:root/ueventd.mt6582.rc \
     $(LOCAL_PATH)/recovery/root/etc/twrp.fstab:recovery/root/etc/twrp.fstab \
@@ -152,9 +151,6 @@ PRODUCT_PACKAGES += \
     libfmcust \
     libfmjni 
 
-PRODUCT_PACKAGES += \
-    libgralloc_extra
-
 # GPS
 PRODUCT_PACKAGES += \
     YGPS
@@ -173,8 +169,7 @@ ADDITIONAL_DEFAULT_PROPERTIES += \
     ro.secure=0 \
     ro.allow.mock.location=1 \
     persist.service.adb.enable=1 \
-    persist.service.debuggable=1 \
-    persist.sys.usb.config=mtp,adb
+    persist.service.debuggable=1 
 
 PRODUCT_PROPERTY_OVERRIDES := \
     ro.adb.secure=0 \
@@ -187,7 +182,6 @@ PRODUCT_PROPERTY_OVERRIDES := \
     ro.telephony.sim.count=2 \
     ro.allow.mock.location=1 \
     ro.debuggable=1 \
-    persist.sys.usb.config=mtp,adb \
     persist.service.adb.enable=1 \
     persist.service.debuggable=1 \
     persist.mtk.wcn.combo.chipid=-1
