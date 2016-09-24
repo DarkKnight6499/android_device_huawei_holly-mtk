@@ -15,6 +15,7 @@ persist.multisim.config=dsds
 persist.radio.multisim.config=dsds
 persist.radio.default.sim=0
 ro.telephony.default_network=0,1
+persist.radio.mobile.data=0,0
 persist.dsds.enabled=true
 ro.dual.sim.phone=true
 mux.debuglog.enable=1
