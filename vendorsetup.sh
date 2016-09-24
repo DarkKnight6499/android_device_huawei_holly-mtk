@@ -1,3 +1,3 @@
-for var in eng user userdebug; do
-add_lunch_combo cm_holly-$var
-done
+add_lunch_combo cm_holly-userdebug
+add_lunch_combo cm_holly-eng
+add_lunch_combo cm_holly-user

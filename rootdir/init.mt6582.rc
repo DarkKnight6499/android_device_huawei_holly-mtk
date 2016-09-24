@@ -5,6 +5,8 @@ import /init.modem.rc
 on early-init
     mount debugfs /sys/kernel/debug /sys/kernel/debug
     setprop ro.mtk.hardware mt6582
+on init
+export LD_PRELOAD "libmtk_symbols.so"
 
 on charger
     mount ext4 /emmc@android /system ro wait
@@ -15,7 +17,6 @@ on charger
     # disable USB
     write /sys/devices/platform/mt_usb/cmode 0
 
-    
     mkdir /protect_f 0771 system system
     mkdir /protect_s 0771 system system
 
@@ -62,12 +63,6 @@ service wifi2agps /system/bin/wifi2agps
     group gps inet
     oneshot
 
-service BGW /system/xbin/BGW
-    user root
-    group gps system radio
-    class main
-    oneshot
-
 # Offline charging
 service ipod /system/bin/ipod
     user root
@@ -83,7 +78,7 @@ on post-fs
 
     exec /system/bin/mknod /dev/Vcodec c 160 0
     chmod 0660 /dev/Vcodec
-    chown system media /dev/Vcodec
+    chown media camera /dev/Vcodec
 
     exec /system/bin/mknod /dev/stpwmt c 190 0
     exec /system/bin/mknod /dev/stpgps c 191 0
@@ -192,7 +187,6 @@ on post-fs-data
     mkdir /data/nvram/media 0771 media audio
     mkdir /data/misc/touchpanel 0755 root system
     mkdir /data/misc/sensor 0664 system system
-
     chmod 0660 /data/misc/wifi/p2p_supplicant.conf
 
     #give system access to rfkill device node
@@ -344,7 +338,6 @@ on post-fs-data
     chown system system /sys/class/misc/m_gyro_misc/gyrodelay
     chown system system /sys/class/misc/m_gyro_misc/gyrobatch
     chown system system /sys/class/misc/m_gyro_misc/gyroflush
-
     chmod 0660 /sys/class/misc/m_alsps_misc/alsactive
     chmod 0660 /sys/class/misc/m_alsps_misc/alsdelay
     chmod 0660 /sys/class/misc/m_alsps_misc/alsbatch
@@ -362,6 +355,7 @@ on post-fs-data
     chown system system /sys/class/misc/m_alsps_misc/psbatch
     chown system system /sys/class/misc/m_alsps_misc/psflush
     # End sensor
+
     chmod 0660 /sys/class/misc/m_baro_misc/baroenablenodata
     chmod 0660 /sys/class/misc/m_baro_misc/baroactive
     chmod 0660 /sys/class/misc/m_baro_misc/barodelay
@@ -372,6 +366,7 @@ on post-fs-data
     chown system system /sys/class/misc/m_baro_misc/barodelay
     chown system system /sys/class/misc/m_baro_misc/barobatch
     chown system system /sys/class/misc/m_baro_misc/baroflush
+
     #Accdet
     chown root radio /sys/devices/platform/Accdet_Driver/driver/accdet_call_state
     #VideoCodec
@@ -383,7 +378,6 @@ on post-fs-data
 
     #Charging Battery
     chown radio radio /sys/devices/platform/battery/Charging_CallState
-
     mkdir /data/amit/ 0770 system system
     mkdir /data/misc/akmd 0770 system system
     mkdir /data/acdapi/ 0770 system system
@@ -446,7 +440,7 @@ on post-fs-data
 
     # device info /proc interface
     chmod 0440 /dev/devmap
-    chown root system /dev/devmap
+    chown root system camera /dev/devmap
 
     # BT relayer mode used VCOM
     chown bluetooth radio /dev/ttyGS2
@@ -481,7 +475,6 @@ on post-fs-data
     chmod 0660 /dev/FM50AF
     chmod 0660 /dev/OV8858AF    
     chmod 0660 /dev/CAM_CAL_DRV
-
     chown system camera /dev/camera-sysram
     chown system camera /dev/camera-isp
     chown system camera /dev/camera-pipemgr
@@ -512,8 +505,9 @@ on post-fs-data
     chown media media /sys/bus/platform/drivers/mem_bw_ctrl/concurrency_scenario
 
     # SMI
-    chmod 0660 /dev/MTK_SMI
+    chmod 0666 /dev/MTK_SMI
     chown media media /dev/MTK_SMI
+
 
     #mtk_sched
     chmod 0660 /dev/mtk_sched
@@ -526,19 +520,13 @@ on post-fs-data
     chmod 666 /dev/mali
     chown system graphics /dev/mali
 
-
-
     #sbchk
     mkdir /data/sec 0750 system system
-
-
     exec 0666 /system/xbin/autosanity
-
 
 #
 # Connectivity related device nodes & configuration (begin)
 #
-
 #/dev/ttyMT2 for Connectivity BT/FM/GPS usage
     chmod 0660 /dev/ttyMT2
     chown system system /dev/ttyMT2
@@ -569,18 +557,13 @@ on boot
     write /proc/sys/vm/dirty_writeback_centisecs 300
 
     chmod 0660 /sys/power/autosleep
-
     chmod 0664 /sys/class/leds/lcd-backlight/brightness
-
     chown system system /sys/devices/system/cpu/cpufreq/hotplug/cpu_num_base
     chmod 0660 /sys/devices/system/cpu/cpufreq/hotplug/cpu_num_base
     chown system system /sys/devices/system/cpu/cpufreq/hotplug/cpu_num_base
     chmod 0660 /sys/devices/system/cpu/cpufreq/hotplug/cpu_num_base
-
     chmod 0664 /sys/class/leds/lcd-backlight/brightness
-
     chown root   system /sys/kernel/debug/binder/transaction_log_enable
-
     chown root   radio  /sys/class/leds/lcd-backlight/duty
     chown root   radio  /sys/class/leds/lcd-backlight/div
     chown system system /sys/class/leds/lcd-backlight/trigger
@@ -590,7 +573,6 @@ on boot
     chown system system /sys/class/leds/red/trigger
     chown system system /sys/class/leds/green/trigger
     chown system system /sys/class/leds/blue/trigger
-
     chmod 0664 /sys/class/leds/greenled/brightness
     chown system system /sys/class/leds/greenled/brightness
     chmod 0664 /sys/class/leds/greenled/trigger
@@ -652,7 +634,6 @@ on boot
     chown root radio /proc/net/nf_conntrack_expect
     chown root radio /proc/net/netfilter/nfnetlink_log
     chown root radio /proc/net/netfilter/nfnetlink_queue
-
     chown radio system /proc/cpufreq/cpufreq_cur_freq
     chown radio system /sys/devices/system/cpu/cpu0/cpufreq/scaling_governor
 
@@ -732,16 +713,16 @@ service atcid-daemon-e /system/bin/atcid
     disabled
     oneshot
 
-on early_property:ro.build.type=eng
-start atci_service
-start atcid-daemon-e
+#on early_property:ro.build.type=eng
+#start atci_service
+#start atcid-daemon-e
+
 service audio-daemon /system/bin/audiocmdservice_atci
     class main
     socket atci-audio stream 660 root system
     user root
     disabled
     oneshot
-
 
 service insmod insmod
     disabled
@@ -790,7 +771,6 @@ service wpa_supplicant /system/bin/wpa_supplicant -dd \
     disabled
     oneshot
 
-
 service drvbd /system/bin/drvbd
     class main
     user system
@@ -819,27 +799,6 @@ service bluetoothd /system/bin/bluetoothd -n
 #  External Modme control related services
 #
     
-service mdlogger /system/bin/mdlogger
-    class main
-    user shell
-    group shell system radio sdcard_rw inet sdcard_r media_rw  ccci
-    disabled
-    oneshot
-
-service dualmdlogger /system/bin/dualmdlogger
-    class main
-    user shell
-    group shell system radio sdcard_rw inet sdcard_r media_rw  ccci
-    disabled
-    oneshot
-
-service emcsmdlogger /system/bin/emcsmdlogger
-    class main
-    user shell
-    group system shell radio sdcard_rw inet sdcard_r media_rw  ccci
-    disabled
-    oneshot
-
 #
 #sensor service (begin)
 #
@@ -913,6 +872,20 @@ service lsm303md /system/bin/lsm303md
 #sensor service (end)
 #
 
+# sensor service (end)
+#
+
+#
+# emsvr service (start)
+#
+service emsvr /system/bin/em_svr
+    class main
+    user system
+    group system radio diag
+
+#
+# emsvr service (end)
+
 service shutdown /system/bin/shutdown
     user root
     group root
@@ -926,6 +899,7 @@ service NvRAMAgent /system/bin/nvram_agent_binder
 service thermal_manager /system/bin/thermal_manager
     class main
     user root
+    group system
     oneshot
 
 service battery_charger /charger
@@ -954,5 +928,3 @@ service conn_launcher /system/bin/logwrapper /system/bin/6620_launcher -p /syste
 service enableswap /system/bin/sh /enableswap.sh
     class core
     oneshot	
-
-

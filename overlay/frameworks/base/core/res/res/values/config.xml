@@ -352,13 +352,4 @@
          format is UMTS|LTE|... -->
     <!--  <string translatable="false" name="config_radio_access_family">GSM|WCDMA</string> -->
 
-    <!-- Older rotation sensors are not setting event.timestamp correctly. Setting to
-	 true will use SystemClock.elapsedRealtimeNanos() to set timestamp. -->
- <!-- To be enabled only in cm based roms
-  <bool name="config_useSystemClockforRotationSensor">true</bool>
- -->
-
-    <!-- IpReachability monitor enable/Disable -->
-    <bool translatable="false" name="config_wifi_ipreachability_monitor">false</bool>
-
 </resources>

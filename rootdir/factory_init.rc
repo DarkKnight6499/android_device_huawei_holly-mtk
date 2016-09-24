@@ -18,12 +18,9 @@ on early-init
     # for backwards compatibility
     symlink /storage/sdcard0 /sdcard
     symlink /storage/sdcard0 /mnt/sdcard
-
     
 on init
-
 sysclktz 0
-
 loglevel 5
 
 # Backward compatibility

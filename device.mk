@@ -43,7 +43,7 @@ PRODUCT_PACKAGES += \
     Torch
 
 PRODUCT_PACKAGES += \
-    libxlog
+    libmtk_symbols \
 
 # Lights
 PRODUCT_PACKAGES += \
@@ -146,16 +146,11 @@ PRODUCT_PACKAGES += \
     libnl_2 \
     libtinyxml
 
-# Camera
-PRODUCT_PACKAGES += \
-    Snap
-
 # FMRadio
 PRODUCT_PACKAGES += \
     FMRadio \
     libfmcust \
-    libfmjni \
-     libmtkplayer
+    libfmjni 
 
 PRODUCT_PACKAGES += \
     libgralloc_extra
@@ -163,6 +158,10 @@ PRODUCT_PACKAGES += \
 # GPS
 PRODUCT_PACKAGES += \
     YGPS
+
+# Gello
+PRODUCT_PACKAGES += \
+    Gello
 
 PRODUCT_COPY_FILES += \
     $(LOCAL_PATH)/configs/media_codecs.xml:system/etc/media_codecs.xml \
