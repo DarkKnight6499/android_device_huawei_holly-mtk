@@ -170,7 +170,7 @@
     <bool name="config_unplugTurnsOnScreen">true</bool>
 
     <!-- Shutdown if the battery temperature exceeds (this value * 0.1) Celsius. -->
-    <integer name="config_shutdownBatteryTemperature">600</integer>
+    <integer name="config_shutdownBatteryTemperature">580</integer>
 
     <!-- Array of light sensor LUX values to define our levels for auto backlight brightness support.
          The N entries of this array define N + 1 control points as follows:
@@ -354,9 +354,9 @@
 
     <!-- Older rotation sensors are not setting event.timestamp correctly. Setting to
 	 true will use SystemClock.elapsedRealtimeNanos() to set timestamp. -->
- <!-- To be enabled only in cm based roms
+
   <bool name="config_useSystemClockforRotationSensor">true</bool>
- -->
+
 
     <!-- IpReachability monitor enable/Disable -->
     <bool translatable="false" name="config_wifi_ipreachability_monitor">false</bool>
