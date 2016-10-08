@@ -161,5 +161,3 @@ FM_LIB_BUILD_MT6627 := yes
 FM_LIB_BUILD_MT6628 := yes
 FM_LIB_BUILD_MT6630 := yes
 
-ANDROID_JACK_VM_ARGS="-Dfile.encoding=UTF-8 -XX:+TieredCompilation -Xmx4096m"
-
